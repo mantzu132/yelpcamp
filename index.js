@@ -6,6 +6,7 @@ const methodOverride = require('method-override');
 const morgan = require('morgan');
 const engine = require('ejs-mate');
 
+
 const Campground = require('./models/campground');
 const campground = require('./models/campground');
 
@@ -46,57 +47,88 @@ app.use(methodOverride('_method'))
 
 // ROUTES START HERE---------------------------------------------------
 
-app.get('/', (req, res) => {
-    res.render('index', { what: 'best', who: 'me' });
+
+// app.get('/', (req, res) => {
+//     res.render('index', { what: 'best', who: 'me' });
+// });
+
+
+app.get('/campgrounds', async (req, res, next) => {
+    try {
+        const campgrounds = await Campground.find({});
+        res.render('campgrounds/index', { campgrounds });
+    } catch (e) {
+        return next(e);
+    }
 });
-
-
-app.get('/campgrounds', async (req, res) => {
-    const campgrounds = await Campground.find({});
-    res.render('campgrounds/index', { campgrounds });
-})
 
 app.get('/campgrounds/new', (req, res) => {
     res.render('campgrounds/new');
 });
 
-app.get('/campgrounds/:id', async (req, res) => {
-    let campground = await Campground.findById(req.params.id);
-    res.render('campgrounds/show', { campground })
-})
-
-app.get('/campgrounds/:id/edit', async (req, res) => {
-    let campground = await Campground.findById(req.params.id);
-    res.render('campgrounds/edit', { campground })
-})
-
-app.put('/campgrounds/:id', async (req, res) => {
-    const updatedCampground = req.body.campground;
-    await Campground.findByIdAndUpdate(req.params.id, updatedCampground);
-    res.redirect(`/campgrounds`);
-})
-
-app.post('/campgrounds', async (req, res) => {
-    // Add a new campground to the database
-    console.log(req.body);
-    const campground = new Campground(req.body.campground);
-    await campground.save();
-
-    // Redirect to the new campground's page
-    res.redirect(`/campgrounds/${campground._id}`);
+app.get('/campgrounds/:id', async (req, res, next) => {
+    try {
+        let campground = await Campground.findById(req.params.id);
+        res.render('campgrounds/show', { campground });
+        
+    } catch (e) {
+        return next(e);
+    }
+    
 });
 
-app.delete('/campgrounds/:id', async (req, res) => {
+app.get('/campgrounds/:id/edit', async (req, res, next) => {
+    try {
+        let campground = await Campground.findById(req.params.id);
+        res.render('campgrounds/edit', { campground });
+    } catch (e) {
+        return next(e);
+    }
+});
+
+app.put('/campgrounds/:id', async (req, res, next) => {
+    try {
+        const updatedCampground = req.body.campground;
+        await Campground.findByIdAndUpdate(req.params.id, updatedCampground);
+        res.redirect(`/campgrounds`);
+    } catch (e) {
+        return next(e);
+    }
+});
+
+
+app.post('/campgrounds', async (req, res, next) => {
+    // Add a new campground to the database
+    let campground;
+    console.log(req.body);
+    try{
+        campground = new Campground(req.body.campground);
+
+        await campground.save();
+        res.redirect(`/campgrounds/${campground._id}`);
+    } catch(e){
+        return next(e);
+    }
+    
+});
+
+app.delete('/campgrounds/:id', async (req, res, next) => {
     try {
         await Campground.findByIdAndDelete(req.params.id);
-        res.redirect('/campgrounds');
-    } catch (err) {
-        console.error(err);
-        res.redirect('/campgrounds');
+         res.redirect('/campgrounds');
+    } catch (e) {
+        return next(e);
     }
 });
 
 // ROUTES END HERE ---------------------------------------------------
+
+// ERROR HANDLER
+app.use((err, req, res, next) => {
+    res.status(500).send('Something went wrong!');
+    console.log(err);
+});
+
 app.use((req, res, next) => {
     res.status(404).send('Sorry, we cannot find that!');
 });

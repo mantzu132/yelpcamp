@@ -5,6 +5,7 @@ const path = require('path');
 const methodOverride = require('method-override');
 const morgan = require('morgan');
 const engine = require('ejs-mate');
+const ExpressError = require('./utils/ExpressError');
 
 
 const Campground = require('./models/campground');
@@ -102,6 +103,7 @@ app.post('/campgrounds', async (req, res, next) => {
     let campground;
     console.log(req.body);
     try{
+        if (!req.body.campground) throw new ExpressError('Invalid Campground Data', 400) 
         campground = new Campground(req.body.campground);
 
         await campground.save();
@@ -123,14 +125,17 @@ app.delete('/campgrounds/:id', async (req, res, next) => {
 
 // ROUTES END HERE ---------------------------------------------------
 
-// ERROR HANDLER
-app.use((err, req, res, next) => {
-    res.status(500).send('Something went wrong!');
-    console.log(err);
+
+
+// When we can't find a page pass error to the error handler
+app.use((req, res, next) => {
+    next(new ExpressError('Sorry, we cannot find that!', 404))
 });
 
-app.use((req, res, next) => {
-    res.status(404).send('Sorry, we cannot find that!');
+// ERROR HANDLER
+app.use((err, req, res, next) => {
+    const { statusCode = 500, message = 'Something went wrong!' } = err;
+    res.status(statusCode).send(message); 
 });
 
 app.listen(3000, () => {

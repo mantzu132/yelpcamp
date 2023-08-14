@@ -7,9 +7,10 @@ const morgan = require('morgan');
 const engine = require('ejs-mate');
 const ExpressError = require('./utils/ExpressError');
 
-
+// Mongoose model
 const Campground = require('./models/campground');
-const campground = require('./models/campground');
+// JOI SCHEMA
+const { campgroundSchema } = require('./schemas');
 
 // DATABASE CONNECTION --------------------------------------------------------------------
 const dbName = 'yelp-camp'; // Name your database here
@@ -87,7 +88,7 @@ app.get('/campgrounds/:id/edit', async (req, res, next) => {
     }
 });
 
-app.put('/campgrounds/:id', async (req, res, next) => {
+app.put('/campgrounds/:id', validateRequestBody, async (req, res, next) => {
     try {
         const updatedCampground = req.body.campground;
         await Campground.findByIdAndUpdate(req.params.id, updatedCampground);
@@ -98,14 +99,11 @@ app.put('/campgrounds/:id', async (req, res, next) => {
 });
 
 
-app.post('/campgrounds', async (req, res, next) => {
-    // Add a new campground to the database
-    let campground;
-    console.log(req.body.campground);
-    try{
-        // if (!req.body.campground) throw new ExpressError('Invalid Campground Data', 400) 
-        campground = new Campground(req.body.campground);
+app.post('/campgrounds', validateRequestBody, async (req, res, next) => {
 
+    try{
+        campground = new Campground(req.body.campground);
+        
         await campground.save();
         res.redirect(`/campgrounds/${campground._id}`);
     } catch(e){
@@ -125,7 +123,14 @@ app.delete('/campgrounds/:id', async (req, res, next) => {
 
 // ROUTES END HERE ---------------------------------------------------
 
-
+// MIDDLEWARE JOI VALIDATION
+function validateRequestBody(req, res, next) {
+    const { error } = campgroundSchema.validate(req.body);
+    if (error) {
+        return next(new ExpressError(error.details[0].message, 520));
+    }
+    next();
+}
 
 // When we can't find a page pass error to the error handler
 app.use((req, res, next) => {

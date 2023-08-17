@@ -10,7 +10,7 @@ const ExpressError = require('./utils/ExpressError');
 // Mongoose model
 const Campground = require('./models/campground');
 // JOI SCHEMA
-const { campgroundSchema } = require('./schemas');
+const { campgroundSchema, reviewSchema } = require('./schemas');
 
 // DATABASE CONNECTION --------------------------------------------------------------------
 const dbName = 'yelp-camp'; // Name your database here
@@ -99,7 +99,7 @@ app.put('/campgrounds/:id', validateRequestBody, async (req, res, next) => {
 });
 
 
-app.post('/campgrounds', validateRequestBody, async (req, res, next) => {
+app.post('/campgrounds', validateRequestBody(campgroundSchema), async (req, res, next) => {
 
     try{
         campground = new Campground(req.body.campground);
@@ -115,21 +115,45 @@ app.post('/campgrounds', validateRequestBody, async (req, res, next) => {
 app.delete('/campgrounds/:id', async (req, res, next) => {
     try {
         await Campground.findByIdAndDelete(req.params.id);
-         res.redirect('/campgrounds');
+        res.redirect('/campgrounds');
     } catch (e) {
         return next(e);
     }
 });
 
+//-------------------------- REVIEWS ROUTES
+app.post('/campgrounds/:id/reviews', validateRequestBody(reviewSchema), async (req, res, next) => {
+
+    try{
+        const review = new Review(req.body.review);
+
+        await review.save();
+
+        const campground = await Campground.findById(req.params.id); 
+
+        campground.reviews.push(review);
+        await campground.save();
+
+        res.redirect(`/campgrounds/${req.params.id}`);
+    } catch(e){
+        return next(e);
+    }
+    
+});
+
+
 // ROUTES END HERE ---------------------------------------------------
 
+
 // MIDDLEWARE JOI VALIDATION
-function validateRequestBody(req, res, next) {
-    const { error } = campgroundSchema.validate(req.body);
-    if (error) {
-        return next(new ExpressError(error.details[0].message, 520));
-    }
-    next();
+function validateRequestBody(schema) {
+    return (req, res, next) => {
+        const { error } = schema.validate(req.body);
+        if (error) {
+            return next(new ExpressError(error.details[0].message, 400));
+        }
+        next();
+    };
 }
 
 // When we can't find a page pass error to the error handler

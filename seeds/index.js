@@ -3,6 +3,8 @@ const cities = require('./cities');
 const { places, descriptors } = require('./seedHelper');
 const Campground = require('../models/campground');
 
+
+// Delete everything in DB and add in random camp objects
 mongoose.connect('mongodb://localhost:27017/yelp-camp', {
     useNewUrlParser: true,
     useUnifiedTopology: true

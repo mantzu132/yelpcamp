@@ -6,13 +6,31 @@ const path = require('path');
 const methodOverride = require('method-override');
 const morgan = require('morgan');
 
+// For storing sessions
+const session = require('express-session')
+const sessionConfig = {
+    secret: 'thisshouldbeabettersecret!',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        httpOnly: true,
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+        maxAge: 1000 * 60 * 60 * 24 * 7
+    }
+}
+app.use(session(sessionConfig))
 
 //flashing messages
 const flash = require('connect-flash');
 app.use(flash());
-// For storing sessions
-const session = require('express-session')
-app.use(session({secret : 'devsecret'}));
+
+//Add the flash messages to res.locals in every route.
+app.use((req, res, next) => {
+    res.locals.messages = req.flash()
+    console.log(res.locals.messages);
+    next();
+});
+
 
 //Parsing cookies
 const cookieParser = require('cookie-parser');
@@ -57,6 +75,9 @@ app.use(express.urlencoded({ extended: true }));
 // So we can edit our campgrounds as HTML forms don't support PUT or DELETE.
 app.use(methodOverride('_method'))
 
+// serve static files in public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 //Routers
 const campgrounds = require('./routes/campgrounds');
@@ -83,9 +104,9 @@ app.use((req, res, next) => {
 
 // ERROR HANDLER
 app.use((err, req, res, next) => {
-    if(!err.message) err.message = 'Oh no! Something went wrong!';
+    if (!err.message) err.message = 'Oh no! Something went wrong!';
     const { statusCode = 500 } = err;
-    res.status(statusCode).render('error', {err}); 
+    res.status(statusCode).render('error', { err });
 });
 
 app.listen(3000, () => {

@@ -1,0 +1,24 @@
+// Example of how the message object looks like:
+{ 
+  success: [ 'Succesfully created a new campground' ],
+  danger: [ 'Succesfully created a new campground' ]
+}
+
+
+<% if (Object.keys(messages).length > 0) { %>
+  <% for (const type in messages) { %>
+    <% if (messages[type].length > 0) { %>
+      <% for (const msg of messages[type]) { %>
+        <div class="alert alert-<%= type %> alert-dismissible fade show" role="alert">
+          <%= msg %>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+          ></button>
+        </div>
+      <% } %>
+    <% } %>
+  <% } %>
+<% } %>

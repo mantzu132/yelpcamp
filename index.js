@@ -5,6 +5,10 @@ const engine = require('ejs-mate');
 const path = require('path');
 const methodOverride = require('method-override');
 const morgan = require('morgan');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const User = require('./models/user');
+
 
 // For storing sessions
 const session = require('express-session')
@@ -19,6 +23,16 @@ const sessionConfig = {
     }
 }
 app.use(session(sessionConfig))
+
+
+//Passport authentication
+app.use(passport.initialize());
+app.use(passport.session()); // Makes passport owrk with express-session^
+passport.use(new LocalStrategy(User.authenticate())) // Use the local passport strategy and use this function to authenticate.
+//Telling passport how to serialize/deserialize a user object (User.serializeUser() function) ... deserializeUser())
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 
 //flashing messages
 const flash = require('connect-flash');
@@ -80,18 +94,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 //Routers
-const campgrounds = require('./routes/campgrounds');
-app.use('/campgrounds', campgrounds)
+const campgroundRoutes = require('./routes/campgrounds');
+app.use('/campgrounds', campgroundRoutes)
 
-const reviews = require('./routes/reviews');
-app.use('/campgrounds/:id/reviews', reviews)
+const reviewRoutes = require('./routes/reviews');
+app.use('/campgrounds/:id/reviews', reviewRoutes)
+
+const usersRoutes = require('./routes/users');
+app.use('/users', usersRoutes)
 
 // ROUTES START HERE---------------------------------------------------
 
 
-app.get('/', (req, res) => {
-    console.log(Review)
-});
 
 
 // ROUTES END HERE ---------------------------------------------------

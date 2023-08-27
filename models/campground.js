@@ -20,8 +20,7 @@ const CampGroundSchema = new Schema({
 
 // If we delete a campground delete all reviews
 // Mongoose middleware
-CampGroundSchema.post('findOneAndDelete', async function(doc, next) {
-    console.log(doc);
+CampGroundSchema.post('findOneAndDelete', async function (doc, next) {
     if (doc) {
         await Review.deleteMany({ _id: { $in: doc.reviews } });
     }

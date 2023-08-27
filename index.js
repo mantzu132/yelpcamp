@@ -41,10 +41,14 @@ app.use(flash());
 //Add the flash messages to res.locals in every route.
 app.use((req, res, next) => {
     res.locals.messages = req.flash()
-    console.log(res.locals.messages);
     next();
 });
 
+// So all of our views have whether request is authenticated or not
+app.use(function (req, res, next) {
+    res.locals.loggedIn = req.isAuthenticated();
+    next();
+});
 
 //Parsing cookies
 const cookieParser = require('cookie-parser');
@@ -53,7 +57,7 @@ app.use(cookieParser());
 // Mongoose model
 // const Review = require('./models/reviews');
 // const Campground = require('./models/campground')
-// const ExpressError = require('./utils/ExpressError');
+const ExpressError = require('./utils/ExpressError');
 
 
 // DATABASE CONNECTION --------------------------------------------------------------------
@@ -112,9 +116,9 @@ app.use('/users', usersRoutes)
 
 
 // When we can't find a page pass error to the error handler
-app.use((req, res, next) => {
-    next(new ExpressError('Sorry, we cannot find that!', 404))
-});
+// app.use((req, res, next) => {
+//     next(new ExpressError('Sorry, we cannot find that!', 404))
+// });
 
 // ERROR HANDLER
 app.use((err, req, res, next) => {

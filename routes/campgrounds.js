@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+// Checks if the user is logged in 
+const loggedIn = require('../utils/middlewares.js')
 
 //Schema for JOI validation
 const { campgroundSchema } = require('../schemas.js');
@@ -14,6 +16,7 @@ const validateRequestBody = require('../utils/validateRequestBody.js');
 
 // ROUTES ---------------------------------------------------------------
 
+
 router.get('/', async (req, res, next) => {
     try {
         const campgrounds = await Campground.find({});
@@ -23,7 +26,7 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-router.get('/new', (req, res) => {
+router.get('/new', loggedIn, (req, res) => {
     res.render('campgrounds/new');
 });
 
@@ -48,7 +51,7 @@ router.get('/:id/edit', async (req, res, next) => {
 });
 
 
-router.put('/:id', validateRequestBody(campgroundSchema), async (req, res, next) => {
+router.put('/:id', loggedIn, validateRequestBody(campgroundSchema), async (req, res, next) => {
     try {
         const updatedCampground = req.body.campground;
         await Campground.findByIdAndUpdate(req.params.id, updatedCampground);
@@ -59,7 +62,7 @@ router.put('/:id', validateRequestBody(campgroundSchema), async (req, res, next)
     }
 });
 
-router.post('/', validateRequestBody(campgroundSchema), async (req, res, next) => {
+router.post('/', loggedIn, validateRequestBody(campgroundSchema), async (req, res, next) => {
 
     try {
         campground = new Campground(req.body.campground);
@@ -73,10 +76,11 @@ router.post('/', validateRequestBody(campgroundSchema), async (req, res, next) =
 
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', loggedIn, async (req, res, next) => {
     try {
         await Campground.findByIdAndDelete(req.params.id);
         req.flash('success', "Succesfully deleted a campground");
+        console.log('About to redirect to /campgrounds');
         res.redirect('/campgrounds');
     } catch (e) {
         return next(e);

@@ -11,29 +11,30 @@ const ExpressError = require('../utils/ExpressError');
 
 // For validating our data with JOI schema.
 const validateRequestBody = require('../utils/validateRequestBody.js');
+const loggedIn = require('../utils/middlewares');
 
 
 //-------------------------- REVIEWS ROUTES
-router.post('/', validateRequestBody(reviewSchema), async (req, res, next) => {
+router.post('/', loggedIn, validateRequestBody(reviewSchema), async (req, res, next) => {
 
-    try{
+    try {
         const review = new Review(req.body.review);
 
         await review.save();
 
-        const campground = await Campground.findById(req.params.id); 
+        const campground = await Campground.findById(req.params.id);
 
         campground.reviews.push(review);
         await campground.save();
-        req.flash('success',"Succesfully created a new review");
+        req.flash('success', "Succesfully created a new review");
         res.redirect(`/campgrounds/${req.params.id}`);
-    } catch(e){
+    } catch (e) {
         return next(e);
     }
-    
+
 });
 
-router.delete('/:reviewId', async (req, res, next) => {
+router.delete('/:reviewId', loggedIn, async (req, res, next) => {
     try {
         // Remove the review from the reviews collection
         await Review.findByIdAndDelete(req.params.reviewId);
@@ -43,7 +44,7 @@ router.delete('/:reviewId', async (req, res, next) => {
             $pull: { reviews: { _id: req.params.reviewId } }
         });
 
-        req.flash('success',"Succesfully delete a review");
+        req.flash('success', "Succesfully delete a review");
 
         res.redirect(`/campgrounds/${req.params.id}`);
     } catch (error) {

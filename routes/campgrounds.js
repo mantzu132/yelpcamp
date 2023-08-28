@@ -6,8 +6,6 @@ const loggedIn = require('../utils/middlewares.js')
 //Schema for JOI validation
 const { campgroundSchema } = require('../schemas.js');
 
-const ExpressError = require('../utils/ExpressError.js');
-
 // Mongoose model
 const Campground = require('../models/campground.js');
 
@@ -24,6 +22,7 @@ router.get('/', async (req, res, next) => {
     } catch (e) {
         return next(e);
     }
+
 });
 
 router.get('/new', loggedIn, (req, res) => {
@@ -32,7 +31,8 @@ router.get('/new', loggedIn, (req, res) => {
 
 router.get('/:id', async (req, res, next) => {
     try {
-        let campground = await Campground.findById(req.params.id).populate('reviews');
+        let campground = await Campground.findById(req.params.id).populate('reviews').populate('author');
+        console.log(campground)
         res.render('campgrounds/show', { campground });
 
     } catch (e) {
@@ -41,7 +41,7 @@ router.get('/:id', async (req, res, next) => {
 
 });
 
-router.get('/:id/edit', async (req, res, next) => {
+router.get('/:id/edit', loggedIn, async (req, res, next) => {
     try {
         let campground = await Campground.findById(req.params.id);
         res.render('campgrounds/edit', { campground });
@@ -65,7 +65,9 @@ router.put('/:id', loggedIn, validateRequestBody(campgroundSchema), async (req, 
 router.post('/', loggedIn, validateRequestBody(campgroundSchema), async (req, res, next) => {
 
     try {
+        console.log(req.body.campground)
         campground = new Campground(req.body.campground);
+        campground.author = req.user._id;
 
         await campground.save();
         req.flash('success', "Succesfully created a new campground");

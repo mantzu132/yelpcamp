@@ -3,9 +3,10 @@ function loggedIn(req, res, next) {
         next();
     } else {
         req.flash('danger', 'You must be logged in to do that');
-        res.redirect('../users/login');
+        res.redirect('/users/login');
     }
 }
+
 
 
 module.exports = loggedIn;

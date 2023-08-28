@@ -50,14 +50,10 @@ app.use(function (req, res, next) {
     next();
 });
 
-//Parsing cookies
-const cookieParser = require('cookie-parser');
-app.use(cookieParser());
-
 // Mongoose model
 // const Review = require('./models/reviews');
 // const Campground = require('./models/campground')
-const ExpressError = require('./utils/ExpressError');
+// const ExpressError = require('./utils/ExpressError');
 
 
 // DATABASE CONNECTION --------------------------------------------------------------------

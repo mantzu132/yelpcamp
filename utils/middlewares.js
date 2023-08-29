@@ -1,3 +1,6 @@
+const ExpressError = require('./ExpressError');
+
+const Campground = require('../models/campground');
 function loggedIn(req, res, next) {
     if (req.user) {
         next();
@@ -7,6 +10,41 @@ function loggedIn(req, res, next) {
     }
 }
 
+const isAuthor = (Model) => {
+    return async (req, res, next) => {
+        try {
+            const doc = await Model.findById(req.params.id);
+
+            if (!doc) {
+                const err = new Error('Resource not found!');
+                err.statusCode = 404;
+                return next(err);
+            }
+
+            if (!doc.author.equals(req.user._id)) {
+                req.flash('danger', 'You do not have permission to do that!');
+                return res.redirect(`/campgrounds/${req.params.id}`);
+            }
+
+            next();
+        } catch (error) {
+            next(error);
+        }
+    };
+};
 
 
-module.exports = loggedIn;
+
+//Validates the request body against the JOI schema
+function validateRequestBody(schema) {
+    return (req, res, next) => {
+        const { error } = schema.validate(req.body);
+        if (error) {
+            return next(new ExpressError(error.details[0].message, 400));
+        }
+        next();
+    };
+}
+
+
+module.exports = { loggedIn, isAuthor, validateRequestBody };

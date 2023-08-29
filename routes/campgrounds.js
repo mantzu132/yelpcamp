@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 // Checks if the user is logged in 
-const loggedIn = require('../utils/middlewares.js')
+const middlewares = require('../utils/middlewares.js')
 
 //Schema for JOI validation
 const { campgroundSchema } = require('../schemas.js');
@@ -9,8 +9,7 @@ const { campgroundSchema } = require('../schemas.js');
 // Mongoose model
 const Campground = require('../models/campground.js');
 
-// For validating our data with JOI schema.
-const validateRequestBody = require('../utils/validateRequestBody.js');
+
 
 // ROUTES ---------------------------------------------------------------
 
@@ -25,14 +24,22 @@ router.get('/', async (req, res, next) => {
 
 });
 
-router.get('/new', loggedIn, (req, res) => {
+router.get('/new', middlewares.loggedIn, (req, res) => {
     res.render('campgrounds/new');
 });
 
 router.get('/:id', async (req, res, next) => {
     try {
-        let campground = await Campground.findById(req.params.id).populate('reviews').populate('author');
-        console.log(campground)
+        let campground = await Campground.findById(req.params.id)
+            .populate('reviews')
+            .populate({
+                path: 'reviews',
+                populate: {
+                    path: 'author',
+                    model: 'User'
+                }
+            })
+            .populate('author');
         res.render('campgrounds/show', { campground });
 
     } catch (e) {
@@ -41,7 +48,8 @@ router.get('/:id', async (req, res, next) => {
 
 });
 
-router.get('/:id/edit', loggedIn, async (req, res, next) => {
+
+router.get('/:id/edit', middlewares.loggedIn, middlewares.isAuthor(Campground), async (req, res, next) => {
     try {
         let campground = await Campground.findById(req.params.id);
         res.render('campgrounds/edit', { campground });
@@ -50,8 +58,7 @@ router.get('/:id/edit', loggedIn, async (req, res, next) => {
     }
 });
 
-
-router.put('/:id', loggedIn, validateRequestBody(campgroundSchema), async (req, res, next) => {
+router.put('/:id', middlewares.loggedIn, middlewares.validateRequestBody(campgroundSchema), async (req, res, next) => {
     try {
         const updatedCampground = req.body.campground;
         await Campground.findByIdAndUpdate(req.params.id, updatedCampground);
@@ -62,10 +69,9 @@ router.put('/:id', loggedIn, validateRequestBody(campgroundSchema), async (req, 
     }
 });
 
-router.post('/', loggedIn, validateRequestBody(campgroundSchema), async (req, res, next) => {
+router.post('/', middlewares.loggedIn, middlewares.validateRequestBody(campgroundSchema), async (req, res, next) => {
 
     try {
-        console.log(req.body.campground)
         campground = new Campground(req.body.campground);
         campground.author = req.user._id;
 
@@ -78,11 +84,11 @@ router.post('/', loggedIn, validateRequestBody(campgroundSchema), async (req, re
 
 });
 
-router.delete('/:id', loggedIn, async (req, res, next) => {
+//TO UPDATE
+router.delete('/:id', middlewares.loggedIn, middlewares.isAuthor(Campground), async (req, res, next) => {
     try {
         await Campground.findByIdAndDelete(req.params.id);
         req.flash('success', "Succesfully deleted a campground");
-        console.log('About to redirect to /campgrounds');
         res.redirect('/campgrounds');
     } catch (e) {
         return next(e);

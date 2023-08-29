@@ -9,16 +9,15 @@ const { reviewSchema } = require('../schemas.js');
 
 const ExpressError = require('../utils/ExpressError');
 
-// For validating our data with JOI schema.
-const validateRequestBody = require('../utils/validateRequestBody.js');
-const loggedIn = require('../utils/middlewares');
+const middlewares = require('../utils/middlewares');
 
 
 //-------------------------- REVIEWS ROUTES
-router.post('/', loggedIn, validateRequestBody(reviewSchema), async (req, res, next) => {
+router.post('/', middlewares.loggedIn, middlewares.validateRequestBody(reviewSchema), async (req, res, next) => {
 
     try {
         const review = new Review(req.body.review);
+        review.author = req.user._id;
 
         await review.save();
 
@@ -34,7 +33,7 @@ router.post('/', loggedIn, validateRequestBody(reviewSchema), async (req, res, n
 
 });
 
-router.delete('/:reviewId', loggedIn, async (req, res, next) => {
+router.delete('/:reviewId', middlewares.isAuthor(Review), middlewares.loggedIn, async (req, res, next) => {
     try {
         // Remove the review from the reviews collection
         await Review.findByIdAndDelete(req.params.reviewId);

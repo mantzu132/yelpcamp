@@ -38,17 +38,16 @@ passport.deserializeUser(User.deserializeUser());
 const flash = require('connect-flash');
 app.use(flash());
 
-//Add the flash messages to res.locals in every route.
+//Add the flash messages / current user object to the locals object (so views can access)
 app.use((req, res, next) => {
     res.locals.messages = req.flash()
+    res.locals.loggedIn = req.isAuthenticated();
+    if (req.user) {
+        res.locals.userId = req.user._id;
+    }
     next();
 });
 
-// So all of our views have whether request is authenticated or not
-app.use(function (req, res, next) {
-    res.locals.loggedIn = req.isAuthenticated();
-    next();
-});
 
 // Mongoose model
 // const Review = require('./models/reviews');

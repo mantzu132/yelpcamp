@@ -36,13 +36,11 @@ router.post('/register', async (req, res, next) => {
 router.get('/login', (req, res) => {
 
     res.render('users/login');
-    console.log(req.session.lmao)
 });
 
 
 router.post('/login', passport.authenticate('local', { failureFlash: true, failureRedirect: '/users/login' }), async (req, res, next) => {
     try {
-        console.log(req.session.lmao)
         req.flash('success', 'Succesfully logged in!');
 
         res.redirect('/campgrounds');

@@ -13,7 +13,7 @@ function loggedIn(req, res, next) {
 const isAuthor = (Model) => {
     return async (req, res, next) => {
         try {
-            const doc = await Model.findById(req.params.id);
+            const doc = await Model.findById(req.params.reviewId);
 
             if (!doc) {
                 const err = new Error('Resource not found!');

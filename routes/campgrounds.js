@@ -74,7 +74,6 @@ router.post('/', middlewares.loggedIn, middlewares.validateRequestBody(campgroun
     try {
         campground = new Campground(req.body.campground);
         campground.author = req.user._id;
-
         await campground.save();
         req.flash('success', "Succesfully created a new campground");
         res.redirect(`/campgrounds/${campground._id}`);
@@ -84,7 +83,6 @@ router.post('/', middlewares.loggedIn, middlewares.validateRequestBody(campgroun
 
 });
 
-//TO UPDATE
 router.delete('/:id', middlewares.loggedIn, middlewares.isAuthor(Campground), async (req, res, next) => {
     try {
         await Campground.findByIdAndDelete(req.params.id);

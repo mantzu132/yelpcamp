@@ -33,7 +33,7 @@ router.post('/', middlewares.loggedIn, middlewares.validateRequestBody(reviewSch
 
 });
 
-router.delete('/:reviewId', middlewares.isAuthor(Review), middlewares.loggedIn, async (req, res, next) => {
+router.delete('/:reviewId', middlewares.loggedIn, middlewares.isAuthor(Review), async (req, res, next) => {
     try {
         // Remove the review from the reviews collection
         await Review.findByIdAndDelete(req.params.reviewId);

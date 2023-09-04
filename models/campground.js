@@ -2,14 +2,21 @@ const mongoose = require('mongoose');
 const Review = require('./reviews')
 
 
+
 const Schema = mongoose.Schema;
 
 const CampGroundSchema = new Schema({
     title: String,
-    image: String,
     price: Number,
     description: String,
     location: String,
+    images: [
+        {
+            _id: false,
+            url: String,
+            fileName: String
+        }
+    ],
     author: {
         type: Schema.Types.ObjectId,
         ref: 'User'

@@ -10,10 +10,12 @@ function loggedIn(req, res, next) {
     }
 }
 
-const isAuthor = (Model) => {
+const isAuthor = (Model, idParam) => {
     return async (req, res, next) => {
         try {
-            const doc = await Model.findById(req.params.reviewId);
+            const docId = req.params[idParam];  // Extracting the ID using the provided idParam
+
+            const doc = await Model.findById(docId);
 
             if (!doc) {
                 const err = new Error('Resource not found!');
@@ -23,7 +25,7 @@ const isAuthor = (Model) => {
 
             if (!doc.author.equals(req.user._id)) {
                 req.flash('danger', 'You do not have permission to do that!');
-                return res.redirect(`/campgrounds/${req.params.id}`);
+                return res.redirect(`/campgrounds/`);
             }
 
             next();
@@ -32,7 +34,6 @@ const isAuthor = (Model) => {
         }
     };
 };
-
 
 
 //Validates the request body against the JOI schema

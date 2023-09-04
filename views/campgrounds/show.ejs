@@ -3,9 +3,27 @@
 <div class="row">
   <div class="col-6">
     <div class="card mb-3">
-      <img src="<%= campground.image%>" class="card-img-top" alt="..." />
+      <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <% campground.images.forEach(function(image, index) { %>
+                <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+                    <img src="<%= image.url %>" alt="Image from <%= campground.title %>">
+                </div>
+            <% }); %>
+        </div>
+        <% if(campground.images.length > 1) { %> <!-- Check if there's more than one image -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        <% } %> <!-- End of the condition -->
+      </div>
       <div class="card-body">
-        <h5 class="card-title"><%= campground.title%></h5>
+        <h5 class="card-title"><%=campground.title %></h5>
         <p class="card-text"><%= campground.description%></p>
       </div>
       <ul class="list-group list-group-flush">
@@ -81,6 +99,8 @@
     <% } %>
   </div>
 </div>
+
+
 
 <!-- Validate the fieldset (choosing amount of stars) -->
 <script src="/scripts/fieldsetValidation.js"></script>

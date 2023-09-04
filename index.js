@@ -10,6 +10,11 @@ const LocalStrategy = require('passport-local');
 const User = require('./models/user');
 
 
+
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------------
+
 // For storing sessions
 const session = require('express-session')
 const sessionConfig = {
@@ -102,9 +107,8 @@ app.use('/campgrounds/:id/reviews', reviewRoutes)
 const usersRoutes = require('./routes/users');
 app.use('/users', usersRoutes)
 
+
 // ROUTES START HERE---------------------------------------------------
-
-
 
 
 // ROUTES END HERE ---------------------------------------------------

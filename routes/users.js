@@ -48,7 +48,6 @@ router.post('/login', passport.authenticate('local', { failureFlash: true, failu
     }
 
     catch (e) {
-        req.flash('danger', e.message);
         res.redirect('/users/register')
     }
 })

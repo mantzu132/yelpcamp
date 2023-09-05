@@ -12,24 +12,9 @@ const Campground = require('../models/campground.js');
 
 const path = require('path');
 
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-
-//TO-DO GET THIS OUT OF THIS FILE
 const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
-cloudinary.config({
-    cloud_name: process.env.cloud_name,
-    api_key: process.env.api_key,
-    api_secret: process.env.api_secret
-});
 
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'YelpCamp',
-        allowedFormats: ['jpeg', 'png', 'jpg']
-    },
-});
+const { cloudinary, storage } = require('../cloudinary');
 
 
 const upload = multer({ storage: storage });
@@ -92,6 +77,7 @@ router.get('/:id/edit', middlewares.loggedIn, middlewares.isAuthor(Campground, '
     }
 });
 
+// 
 router.put('/:id', middlewares.loggedIn, upload.array('image', 10), middlewares.validateRequestBody(campgroundSchema), async (req, res, next) => {
     try {
         let updatedCampground = await Campground.findById(req.params.id);
@@ -101,20 +87,33 @@ router.put('/:id', middlewares.loggedIn, upload.array('image', 10), middlewares.
             return res.redirect(`/campgrounds`);
         }
 
+
+         if (req.body.deleteImages) {
+             for (let filename of req.body.deleteImages) {
+                await cloudinary.uploader.destroy(filename)
+            }
+            // Delete specified images from the campground.
+            // It filters out images from the updatedCampground's images array 
+            // where the image's fileName matches any filename in req.body.deleteImages.
+            updatedCampground.images = updatedCampground.images.filter(image => {
+            return !req.body.deleteImages.includes(image.fileName);
+         });
+}
+        //Get only the url and filename from req.files 
         if (req.files) {
             let image_data = req.files.map(img => ({
                 url: img.path,
                 fileName: img.filename
             }));
-
-            updatedCampground.images = image_data;
+            // push each object into the campground's images array
+            image_data.forEach(img => updatedCampground.images.push(img));
         }
 
         Object.assign(updatedCampground, req.body.campground);
         await updatedCampground.save();
 
         req.flash('success', "Succesfully updated a campground");
-        res.redirect(`/campgrounds`);
+        res.redirect(`/campgrounds/${req.params.id}`);
     } catch (e) {
         return next(e);
     }

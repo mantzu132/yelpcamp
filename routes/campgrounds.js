@@ -10,14 +10,15 @@ const { campgroundSchema } = require('../schemas.js');
 // Mongoose model
 const Campground = require('../models/campground.js');
 
-const path = require('path');
-
 const multer = require('multer');
 
 const { cloudinary, storage } = require('../cloudinary');
 
 
 const upload = multer({ storage: storage });
+
+const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
+const geocodingClient = mbxGeocoding({ accessToken: process.env.MAPBOX_TOKEN});
 
 // ROUTES ---------------------------------------------------------------
 
@@ -33,9 +34,12 @@ const upload = multer({ storage: storage });
 //     }
 // });
 
+
+
 router.get('/', async (req, res, next) => {
     try {
-        const campgrounds = await Campground.find({});
+        const campgrounds = await Campground.find({});  
+    
         res.render('campgrounds/index', { campgrounds });
     } catch (e) {
         return next(e);
@@ -59,6 +63,8 @@ router.get('/:id', async (req, res, next) => {
                 }
             })
             .populate('author');
+
+        console.log(campground);
         res.render('campgrounds/show', { campground });
 
     } catch (e) {
@@ -129,8 +135,22 @@ router.post('/', middlewares.loggedIn, upload.array('image', 10), middlewares.va
             fileName: img.filename
         }));
         campground = new Campground(req.body.campground);
+
+
         campground.author = req.user._id;
         campground.images = image_data;
+
+         // Get coordinates of entered location
+        await geocodingClient.forwardGeocode({
+            query: req.body.campground.location,
+            limit: 1
+        })
+        .send()
+        .then(response => {
+        campground.geometry = response.body.features[0].geometry;
+        })
+        // ----------------
+        console.log(campground);
         await campground.save();
         req.flash('success', "Succesfully created a new campground");
         res.redirect(`/campgrounds/${campground._id}`);

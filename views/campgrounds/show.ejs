@@ -1,26 +1,52 @@
 <% layout('layouts/boilerplate')%>
-<link rel="stylesheet" type="text/css" href="/stylesheets/stars.css"/>
+<link rel="stylesheet" type="text/css" href="/stylesheets/stars.css" />
+
+<script>
+  const MAPBOXTOKEN = "<%- process.env.MAPBOX_TOKEN %>";
+  const campground = <%- JSON.stringify(campground)  %>;
+</script>
+
 <div class="row">
   <div class="col-6">
+    <div id="map" style="width: 400px; height: 300px"></div>
     <div class="card mb-3">
-      <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+      <div
+        id="carouselExampleControls"
+        class="carousel slide"
+        data-bs-ride="carousel"
+      >
         <div class="carousel-inner">
-            <% campground.images.forEach(function(image, index) { %>
-                <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
-                    <img src="<%= image.url %>" alt="Image from <%= campground.title %>">
-                </div>
-            <% }); %>
+          <% campground.images.forEach(function(image, index) { %>
+          <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+            <img
+              src="<%= image.url %>"
+              alt="Image from <%= campground.title %>"
+            />
+          </div>
+          <% }); %>
         </div>
-        <% if(campground.images.length > 1) { %> <!-- Check if there's more than one image -->
-            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-        <% } %> <!-- End of the condition -->
+        <% if(campground.images.length > 1) { %>
+        <!-- Check if there's more than one image -->
+        <button
+          class="carousel-control-prev"
+          type="button"
+          data-bs-target="#carouselExampleControls"
+          data-bs-slide="prev"
+        >
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button
+          class="carousel-control-next"
+          type="button"
+          data-bs-target="#carouselExampleControls"
+          data-bs-slide="next"
+        >
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+        <% } %>
+        <!-- End of the condition -->
       </div>
       <div class="card-body">
         <h5 class="card-title"><%=campground.title %></h5>
@@ -28,16 +54,27 @@
       </div>
       <ul class="list-group list-group-flush">
         <li class="list-group-item text-muted"><%= campground.location%></li>
-        <li class="list-group-item">Submitted by <%= campground.author.username%></li>
+        <li class="list-group-item">
+          Submitted by <%= campground.author.username%>
+        </li>
         <li class="list-group-item">$<%= campground.price %>/night</li>
       </ul>
-      <% if (typeof userId !== 'undefined' && campground.author._id.equals(userId)) { %>
-        <div class="card-body">
-            <a class="card-link btn btn-info" href="/campgrounds/<%=campground._id%>/edit">Edit</a>
-            <form class="d-inline" action="/campgrounds/<%=campground._id%>?_method=DELETE" method="POST">
-              <button class="btn btn-danger">Delete</button>
-            </form>
-        </div>
+      <% if (typeof userId !== 'undefined' &&
+      campground.author._id.equals(userId)) { %>
+      <div class="card-body">
+        <a
+          class="card-link btn btn-info"
+          href="/campgrounds/<%=campground._id%>/edit"
+          >Edit</a
+        >
+        <form
+          class="d-inline"
+          action="/campgrounds/<%=campground._id%>?_method=DELETE"
+          method="POST"
+        >
+          <button class="btn btn-danger">Delete</button>
+        </form>
+      </div>
       <% } %>
       <div class="card-footer text-muted">2 days ago</div>
     </div>
@@ -53,7 +90,15 @@
     >
       <div class="mb-3">
         <fieldset class="starability-basic">
-          <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="0" checked aria-label="No rating." />
+          <input
+            type="radio"
+            id="no-rate"
+            class="input-no-rate"
+            name="review[rating]"
+            value="0"
+            checked
+            aria-label="No rating."
+          />
           <input type="radio" id="rate1" name="review[rating]" value="1" />
           <label for="rate1" title="Terrible">1 star</label>
           <input type="radio" id="rate2" name="review[rating]" value="2" />
@@ -86,29 +131,35 @@
     <% for(let review of campground.reviews) { %>
     <div class="card mb-3">
       <div class="card-body">
-        <p class="card-title starability-result" data-rating="<%= review.rating %>"> </p>
+        <p
+          class="card-title starability-result"
+          data-rating="<%= review.rating %>"
+        ></p>
         <p class="card-text">Review: <%= review.body %></p>
         <p class="card-text">Author: <%= review.author.username %></p>
-          <% if (typeof userId !== 'undefined' && review.author._id.equals(userId)) { %>
-            <form action="/campgrounds/<%=campground._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
-                <button class="btn btn-sm btn-danger">Delete</button>
-            </form>
-          <% } %>
+        <% if (typeof userId !== 'undefined' &&
+        review.author._id.equals(userId)) { %>
+        <form
+          action="/campgrounds/<%=campground._id%>/reviews/<%=review._id%>?_method=DELETE"
+          method="POST"
+        >
+          <button class="btn btn-sm btn-danger">Delete</button>
+        </form>
+        <% } %>
       </div>
     </div>
     <% } %>
   </div>
 </div>
 
-
-
-<!-- Validate the fieldset (choosing amount of stars) -->
 <script src="/scripts/fieldsetValidation.js"></script>
+
+<script src="/scripts/showPageMap.js"></script>
 
 <style>
   .starability-basic.is-invalid {
-      border: 1px solid #dc3545;
-      padding: .375rem .75rem;
-      border-radius: .25rem;
+    border: 1px solid #dc3545;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.25rem;
   }
 </style>

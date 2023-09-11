@@ -8,8 +8,7 @@ const morgan = require("morgan");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user");
-
-//----------------------------------------------------------------------
+const mongoSanitize = require("express-mongo-sanitize");
 
 //----------------------------------------------------------------------------
 
@@ -49,11 +48,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Mongoose model
-// const Review = require('./models/reviews');
-// const Campground = require('./models/campground')
-// const ExpressError = require('./utils/ExpressError');
-
 // DATABASE CONNECTION --------------------------------------------------------------------
 const dbName = "yelp-camp"; // Name your database here
 const dbUrl = "mongodb://localhost:27017/" + dbName;
@@ -89,6 +83,9 @@ app.use(methodOverride("_method"));
 // serve static files in public directory
 app.use(express.static(path.join(__dirname, "public")));
 
+//sanitize user input to prevent mongo injection
+app.use(mongoSanitize());
+
 //Routers
 const campgroundRoutes = require("./routes/campgrounds");
 app.use("/campgrounds", campgroundRoutes);
@@ -108,9 +105,9 @@ app.get("/", async (req, res, next) => {
 // ROUTES END HERE ---------------------------------------------------
 
 // When we can't find a page pass error to the error handler
-// app.use((req, res, next) => {
-//     next(new ExpressError('Sorry, we cannot find that!', 404))
-// });
+app.use((req, res, next) => {
+  next(new ExpressError("Sorry, we cannot find that!", 404));
+});
 
 // ERROR HANDLER
 app.use((err, req, res, next) => {

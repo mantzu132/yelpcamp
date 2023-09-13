@@ -1,8 +1,9 @@
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 
-const dbName = "yelp-camp";
-const dbUrl = "mongodb://localhost:27017/" + dbName;
+// const dbName = "yelp-camp";
+// const dbUrl = "mongodb://localhost:27017/" + dbName;
+const dbUrl = process.env.DB_URL;
 
 const store = MongoStore.create({
   mongoUrl: dbUrl,

@@ -1,5 +1,5 @@
 # YelpChamp: A Comprehensive Campground Review Platform
-
+![Front-page](https://i.imgur.com/vc3qHur.png)
 ## About
 YelpChamp is a web application for campers to share and discover camping locations.
 

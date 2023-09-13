@@ -1,10 +1,5 @@
 <% layout('layouts/boilerplate')%>
 
-<script>
-  const MAPBOXTOKEN = "<%- process.env.MAPBOX_TOKEN %>";
-  const campgrounds = <%- JSON.stringify(campgrounds) %>;
-</script>
-
 <div id="map"></div>
 <h1>All Campgrounds</h1>
 <% for (let campground of campgrounds){%>

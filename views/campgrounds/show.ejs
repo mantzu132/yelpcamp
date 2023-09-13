@@ -1,14 +1,9 @@
 <% layout('layouts/boilerplate')%>
 <link rel="stylesheet" type="text/css" href="/stylesheets/stars.css" />
 
-<script>
-  const MAPBOXTOKEN = "<%- process.env.MAPBOX_TOKEN %>";
-  const campground = <%- JSON.stringify(campground)  %>;
-</script>
-
 <div class="row">
   <div class="col-6">
-    <div id="campground-map"></div>
+    <div id="campground-map" class="mb-4"></div>
     <div class="card mb-3">
       <div
         id="carouselExampleControls"
@@ -80,7 +75,7 @@
     </div>
   </div>
   <div class="col-6">
-    <h2>Leave a Review</h2>
+    <h2 class="mb-3">Leave a Review</h2>
     <form
       action="/campgrounds/<%=campground._id%>/reviews"
       method="POST"
@@ -88,7 +83,7 @@
       id="reviewForm"
       novalidate
     >
-      <div class="mb-3">
+      <div class="mb-1">
         <fieldset class="starability-basic">
           <input
             type="radio"
@@ -155,11 +150,3 @@
 <script src="/scripts/fieldsetValidation.js"></script>
 
 <script src="/scripts/showPageMap.js"></script>
-
-<style>
-  .starability-basic.is-invalid {
-    border: 1px solid #dc3545;
-    padding: 0.375rem 0.75rem;
-    border-radius: 0.25rem;
-  }
-</style>

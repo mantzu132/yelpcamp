@@ -1,70 +1,23 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const app = express();
 const engine = require("ejs-mate");
 const path = require("path");
 const methodOverride = require("method-override");
 const morgan = require("morgan");
-const passport = require("passport");
-const LocalStrategy = require("passport-local");
-const User = require("./models/user");
+const configurePassport = require("./config/passportConfig");
+const configureSession = require("./config/sessionConfig");
 const mongoSanitize = require("express-mongo-sanitize");
+const Campground = require("./models/campground");
+const configureHelmet = require("./config/helmetConfig");
+const flash = require("connect-flash");
+const connectDB = require("./config/databaseConfig");
+const setupLocals = require("./config/localsConfig");
 
 //----------------------------------------------------------------------------
 
-// For storing sessions
-const session = require("express-session");
-const sessionConfig = {
-  secret: "thisshouldbeabettersecret!",
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    httpOnly: true,
-    expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  },
-};
-app.use(session(sessionConfig));
-
-//Passport authentication
-app.use(passport.initialize());
-app.use(passport.session()); // Makes passport owrk with express-session^
-passport.use(new LocalStrategy(User.authenticate())); // Use the local passport strategy and use this function to authenticate.
-//Telling passport how to serialize/deserialize a user object (User.serializeUser() function) ... deserializeUser())
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
-
-//flashing messages
-const flash = require("connect-flash");
-app.use(flash());
-
-//Add the flash messages / current user object to the locals object (so views can access)
-app.use((req, res, next) => {
-  res.locals.messages = req.flash();
-  res.locals.loggedIn = req.isAuthenticated();
-  if (req.user) {
-    res.locals.userId = req.user._id;
-  }
-  next();
-});
-
-// DATABASE CONNECTION --------------------------------------------------------------------
-const dbName = "yelp-camp"; // Name your database here
-const dbUrl = "mongodb://localhost:27017/" + dbName;
-
-mongoose.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true });
-
-const db = mongoose.connection;
-
-db.on("error", console.error.bind(console, "MongoDB connection error:"));
-db.once("open", () => {
-  console.log("Database connection open");
-});
-
-// DATABASE CONNECTION END  --------------------------------------------------------------------
+connectDB();
 
 // Templating and templating engine.
-
 app.engine("ejs", engine);
 app.set("view engine", "ejs");
 
@@ -73,6 +26,9 @@ app.set("views", path.join(__dirname, "views"));
 
 // So we get HTML status code with requests in console.
 app.use(morgan("dev"));
+
+// For security app.use(helmet)
+configureHelmet(app);
 
 // So we can use PUT and DELETE in forms.
 app.use(express.urlencoded({ extended: true }));
@@ -86,15 +42,30 @@ app.use(express.static(path.join(__dirname, "public")));
 //sanitize user input to prevent mongo injection
 app.use(mongoSanitize());
 
-//Routers
-const campgroundRoutes = require("./routes/campgrounds");
+// Set up session
+configureSession(app);
+
+// app.use(passport)
+configurePassport(app);
+
+//flashing messages
+app.use(flash());
+
+app.use(setupLocals);
+
+//Routers -----------------------------------------------------------------------
+const campgroundRoutes = require("./routes/campgroundRoutes");
 app.use("/campgrounds", campgroundRoutes);
 
-const reviewRoutes = require("./routes/reviews");
+const reviewRoutes = require("./routes/reviewsRoutes");
 app.use("/campgrounds/:id/reviews", reviewRoutes);
 
-const usersRoutes = require("./routes/users");
+const usersRoutes = require("./routes/usersRoutes");
+const { connect } = require("http2");
 app.use("/users", usersRoutes);
+
+const apiRoutes = require("./routes/apiRoutes");
+app.use("/api", apiRoutes);
 
 // ROUTES START HERE---------------------------------------------------
 

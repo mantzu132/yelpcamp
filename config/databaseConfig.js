@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
+const { db } = require("../models/user");
 
-const dbName = "yelp-camp"; // Name your database here
+const dbName = "yelp-camp";
 const dbUrl = "mongodb://localhost:27017/" + dbName;
+// const dbUrl = process.env.DB_URL;
 
 const connectDB = () => {
   mongoose.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true });

@@ -1,3 +1,6 @@
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
 const express = require("express");
 const app = express();
 const engine = require("ejs-mate");
@@ -7,11 +10,11 @@ const morgan = require("morgan");
 const configurePassport = require("./config/passportConfig");
 const configureSession = require("./config/sessionConfig");
 const mongoSanitize = require("express-mongo-sanitize");
-const Campground = require("./models/campground");
 const configureHelmet = require("./config/helmetConfig");
 const flash = require("connect-flash");
 const connectDB = require("./config/databaseConfig");
 const setupLocals = require("./config/localsConfig");
+const MongoStore = require("connect-mongo");
 
 //----------------------------------------------------------------------------
 
